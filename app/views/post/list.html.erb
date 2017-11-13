@@ -1,0 +1,100 @@
+<h3>글 리스트</h3>
+
+<a href="/post/new" style="float:right; display:inline-block; margin-right:10px;">
+    <button type="button" class="btn btn-outline-primary">New</button>
+</a>
+
+<% if user_signed_in? %>    <!-- devise 에서 제공하는 helper method -->
+    <p>계정: <%= current_user.email %></p>
+    <img class="img img-thumbnail" style="width:50px; height:50px; object-fit:cover;" src="<%= current_user.profile %>" />
+    <%= link_to '프로필', user_profile_path %>
+    
+    <p class="sign"><%= link_to "로그아웃", destroy_user_session_path, method: :delete, data: { confirm: "로그아웃 하시겠습니까?" } %></p>
+    <%= user_roles(current_user) %>
+<% else %>
+    <p class="sign"><%= link_to "로그인", new_user_session_path %></p>
+<% end %>
+
+<br />
+<br />
+
+<div id="map" style="width:80%;height:400px;"></div>
+
+
+<ul class="list-group">
+    <% @post.each do |onepost| %>
+        <li class="list-group-item">
+            <h6><%=onepost.id%>, <%=onepost.title%></h6>
+            
+            <% if user_signed_in? %>
+                <%= link_to '수정', post_modify_path(:id => onepost.id) if onepost.updatable_by? current_user %>
+                <%= link_to '삭제', post_delete_path(:id => onepost.id) if onepost.deletable_by? current_user %>
+                <a href="/comment/new?id=<%=onepost.id%>">댓글</a>
+            <% end %>
+            
+            <br />
+            
+            <%=onepost.contents%> 
+            <br />
+            작성자: <%=onepost.user.name%>, <%=onepost.created_at.in_time_zone(9).to_formatted_s(:short)%>
+            
+            <br />
+            
+            <ol class="list-group" style="font-size: 13px; color: #6B8E23;">
+                <% onepost.comments.each do |onecomment| %>
+                    <li><%=onecomment.contents%>
+                    <a href="/comment/delete?id=<%=onecomment.id%>" style="font-size: 11px;">댓삭제</a>
+                    </li>
+                <% end %>
+            </ol>
+            
+        </li>
+        
+    <% end %>
+</ul>
+
+<div class="align-center" style="width: 100%; text-align: center;">
+    <%=will_paginate @post, :previous_label => t("이전"), :next_label => t("다음") %>
+</div>
+
+<script>
+	var container = document.getElementById('map');
+	var options = {
+		center: new daum.maps.LatLng(37.534477, 126.994232),  // (위도, 경도)
+		level: 3
+	};
+
+	var map = new daum.maps.Map(container, options);
+	
+    var positions = [
+        <% @post.each do |onepost| %>
+            {
+                content: "<div style='padding:5px; width:200px; text-align:center;'><%=onepost.title%><br><%=onepost.address%></div>",
+                latlng : new daum.maps.LatLng(<%=onepost.lat%>, <%=onepost.lng%>)
+            },
+        <% end %>
+        ];
+        
+    for (var i = 0; i < positions.length; i++) {
+        var marker = new daum.maps.Marker({
+            map: map,
+            position: positions[i].latlng
+        });
+        
+        var infoWindow = new daum.maps.InfoWindow({
+            content: positions[i].content,
+        });
+        
+        (function(marker, infoWindow) {
+            daum.maps.event.addListener(marker, 'mouseover', function() {
+                infoWindow.open(map, marker);
+            });
+            
+            daum.maps.event.addListener(marker, 'mouseout', function() {
+                infoWindow.close();
+            });
+        })(marker, infoWindow);
+        
+        
+    }
+</script>

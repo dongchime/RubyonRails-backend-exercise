@@ -1,0 +1,77 @@
+<h3>새 글쓰기</h3>    
+
+<form action="/post/create">
+    <input type="hidden" id="lat" name="lat" value="0" />
+    <input type="hidden" id="lng" name="lng" value="0" />
+    <input type="hidden" id="address" name="address" value="" />
+    
+    <p>
+        <label for="title">제목: </label>
+        <input type="text" class="form-control" name="title" />
+    </p>
+    
+    <p>
+        <div id="map" style="width:400px; height:300px;"></div>
+        <div id="map_message"></div>
+    </p>
+    
+    <hr>
+    <textarea class="form-control" name="contents" rows="3"></textarea>
+    <br>
+    <button type="submit" class="btn btn-primary" style="float: right; margin: 0 20px 20px 20px;">글쓰기</button>
+    
+</form>
+
+<script>
+	var container = document.getElementById('map');
+	var options = {
+		center: new daum.maps.LatLng(37.534477, 126.994232),  // (위도, 경도)
+		level: 5
+	};
+
+	var map = new daum.maps.Map(container, options);
+	
+	var marker = null;
+	var geocoder = new daum.maps.services.Geocoder();
+	var marker = null;
+	
+	// 지도에 클릭 이벤트를 등록합니다
+    // 지도를 클릭하면 마지막 파라미터로 넘어온 함수를 호출합니다
+    daum.maps.event.addListener(map, 'click', function(mouseEvent) {      
+        if (marker == null) {
+            marker = new daum.maps.Marker({ 
+    		    // 지도 중심좌표에 마커를 생성합니다 
+    		    position: map.getCenter() 
+    		}); 
+    		// 지도에 마커를 표시합니다
+    		marker.setMap(map);
+        }
+        
+        
+        // 클릭한 위도, 경도 정보를 가져옵니다 
+        var latlng = mouseEvent.latLng; 
+        
+        // 마커 위치를 클릭한 위치로 옮깁니다
+        marker.setPosition(latlng);
+        
+        
+        // 데이터 히든 필드에 지정
+        $('#lat').val(latlng.getLat());
+        $('#lng').val(latlng.getLng());
+        
+        // 지오로케이션
+        geocoder.coord2Address(latlng.getLng(), latlng.getLat(), function(result, status) {
+            // 안내 메세지 표시
+            var address_name = ''
+    		if (result.length > 0) {
+    			address_name = result[0].address.address_name;
+    		}
+            $('#map_message').text('선택한 위치는 '+address_name+' ('+latlng.getLat()+', '+latlng.getLng()+')입니다.');
+            
+            // 주소 지정
+            $('#address').val(address_name);
+    	});
+        
+    });
+</script>
+

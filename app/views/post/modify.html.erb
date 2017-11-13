@@ -1,0 +1,14 @@
+<h3>글 수정하기</h3>    
+
+<form action="/post/update">
+    <input type="hidden" name="id" value="<%=@post.id%>" />
+    <p>
+        <label for="title">제목: </label>
+        <input class="form-control" type="text" name="title" value="<%=@post.title%>"/>     <!-- 여기서 value는 이전에 수정하기 전 내용을 불러오기 위한 것 -->
+    </p>
+    
+    <textarea class="form-control" name="contents"><%=@post.contents%></textarea>
+    <br>
+    <button type="submit" class="btn btn-primary" style="float: right; margin:0 20px 20px 20px;">수정하기</button>
+</form>
+
